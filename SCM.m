@@ -1,5 +1,5 @@
 % 3GPP TR 38.900 based three-dimensional Spatial Channel Model(SCM) model
-% Version 0.7 made in 2020-05-08
+% Version 0.7 made in 2020-05-10
 
 classdef SCM < handle
     
