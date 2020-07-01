@@ -274,7 +274,7 @@ classdef SCM < handle
             % 직교 방사패턴 간섭 계산
             trx_coef = [ obj.rx_theta(ZoA); obj.rx_phi(AoA) ].';
             if xpr == 0, trx_coef = trx_coef * ( exp(2j*pi*rand(1)) .* [1 0; 0 -1] );
-            else, trx_coef = trx_coef * ( exp(2j*pi*rand(2,2)) .* [1 1/sqrt(xpr); 1/sqrt(xpr) 1] ); end
+            else, trx_coef = trx_coef * ( exp(2j*pi*rand(1)) .* [1 1/sqrt(xpr); 1/sqrt(xpr) 1] ); end
             trx_coef = trx_coef * [ obj.tx_theta(ZoD); obj.tx_phi(AoD)];
             
             % 송수신 안테나 반응 벡터 계산

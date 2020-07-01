@@ -46,7 +46,7 @@ for i = 1:iter
         
         % Beamforming 계수 계산 (송신, 수신 계수)
         Wt = steer_precoding(model.fc, model.tx_ant, sel_angle(1:2,:));
-        Wr = steer_precoding(model.fc, model.rx_ant, sel_angle(3:4,:));
+        Wr = steer_precoding(model.fc, model.rx_ant, sel_angle(3:4,:), 2);
         
         % 시간 영역 Effective 채널 계수 계산
         for k = 1:path
