@@ -2,6 +2,7 @@
 
 % 전송 데이터 스펙 설정
 model = SCM();
+model.n_mray = 1;
 model.n_path = path;
 cp_len = fft_len / 4;
 data_len = fft_len * mod_type;

@@ -14,7 +14,7 @@ tx_ant = 16;                % 기지국의 안테나 수
 path = 1;
 snr = -20:5:10;             % 전송 채널 SNR 범위
 iter = 100;                 % 전송 반복 횟수
-plot_format = 's-g';
+plot_format = 's-b';
 FC_MIMO_testbed             % 실행 프로그램
 hold on
 
@@ -35,6 +35,6 @@ rx_ant = 1;                 % 수신기의 개별 안테나 수
 path = 1;
 snr = -20:5:10;             % 전송 채널 SNR 범위
 iter = 300;                 % 전송 반복 횟수
-plot_format = 'k-*';
+plot_format = 'r-*';
 Hybrid_beamforming          % 실행 프로그램
 hold on
