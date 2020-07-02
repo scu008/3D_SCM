@@ -187,7 +187,7 @@ classdef SCM < handle
             
             % 수신단의 안테나 위치 행렬
             obj.Nrx = obj.rx_ant(1) * obj.rx_ant(2);
-            rdy = obj.rx_ant(3) * obj.lamda;    
+            rdy = obj.rx_ant(3) * obj.lamda;
             rdz = obj.rx_ant(4) * obj.lamda;
             temp3 = repmat(0:obj.rx_ant(1)-1, obj.rx_ant(2), 1);
             temp4 = repmat(0:obj.rx_ant(2)-1, 1, obj.rx_ant(1));
@@ -236,13 +236,13 @@ classdef SCM < handle
             % c_ang: 송수신 각도, c_ang = [ AoD(1:n_path); ZoD(1:n_path); AoA(1:n_path); ZoA(1:n_path); ]
             % res_ang: 전체 송수신 각도
     
-            % 각 cluster의 ZoD, AoD, ZoA, AoA 값 생성
+            % 각 cluster의 ZoD, AoD, ZoA, AoA 중심 값 생성
             angle(1,:) = rand(1, obj.n_path)*pi;         % ZoD
             angle(2,:) = -pi/2 + rand(1, obj.n_path)*pi; % AoD
             angle(3,:) = rand(1, obj.n_path)*pi;         % ZoA
             angle(4,:) = -pi/2 + rand(1, obj.n_path)*pi; % AoA
             
-            % 각 ray의 ZoD, AoD, ZoA, AoA와 중심 값 생성
+            % 각 ray의 ZoD, AoD, ZoA, AoA 생성
             res_angle = cell(1, obj.n_path);
             for i = 1 : obj.n_path
                 tmp_angle = randn(4, obj.n_ray(i));
