@@ -277,6 +277,8 @@ classdef SCM < handle
             else, trx_coef = trx_coef * ( exp(2j*pi*rand(2)) .* [1 1/sqrt(xpr); 1/sqrt(xpr) 1] ); end
             trx_coef = trx_coef * [ obj.tx_theta(ZoD); obj.tx_phi(AoD)];
             
+            trx_coef = 1;
+            
             % 송수신 안테나 반응 벡터 계산
             rx_r = obj.cvt_S2R(ZoA, AoA);
             sub_rx = exp(2j*pi * obj.rx_d * rx_r / obj.lamda);
