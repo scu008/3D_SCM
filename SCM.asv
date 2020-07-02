@@ -245,7 +245,7 @@ classdef SCM < handle
             % 각 ray의 ZoD, AoD, ZoA, AoA 생성
             res_angle = cell(1, obj.n_path);
             for i = 1 : obj.n_path
-                % ray의 수가 1일 경우에는 중심 각도를 그대로 이용
+                % ray의 수가 1
                 if obj.n_ray == 1, tmp_angle = angle;
                 else
                     tmp_angle = randn(4, obj.n_ray(i));
@@ -376,8 +376,8 @@ classdef SCM < handle
             
             % 송신 신호에 채널 계수 적용
             temp = zeros(tap_len, sym_len, N_rx);
-            for i = 1:N_rx
-                for j = 1:N_tx
+            for i= 1:N_rx
+                for j= 1:N_tx
                     % 수신 안테나마다 채널과 송신 신호 내적
                     temp(:,:,i) = temp(:,:,i) + coeff(:,:,i,j) .* ( ones(tap_len,1) * sig(j,:) ) ;
                 end
