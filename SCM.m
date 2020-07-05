@@ -245,6 +245,7 @@ classdef SCM < handle
             % 각 ray의 ZoD, AoD, ZoA, AoA 생성
             res_angle = cell(1, obj.n_path);
             for i = 1 : obj.n_path
+                
                 % ray의 수가 1일 경우에는 중심 각도를 그대로 이용
                 if obj.n_ray == 1, tmp_angle = angle;
                 else
@@ -254,6 +255,7 @@ classdef SCM < handle
                     tmp_angle(3,:) = tmp_angle(3,:) * (obj.zsa * pi/180) + angle(3,i);
                     tmp_angle(4,:) = tmp_angle(4,:) * (obj.asa * pi/180) + angle(4,i);
                 end
+                
                 res_angle{i} = tmp_angle;
             end
         end
@@ -272,7 +274,7 @@ classdef SCM < handle
         end
         
         
-        % Ray 당 채널 계수를 계산하는 함수 ============================
+        % Ray 당 채널 계수를 계산하는 함수 ===================================
         function [subpath_coeff] = ray_cal(obj, sample_len, ZoD, AoD, ZoA, AoA, xpr, vel)
             
             % 직교 방사패턴 간섭 계산
@@ -327,12 +329,9 @@ classdef SCM < handle
             coeff = zeros(obj.n_path+1, sample_len, obj.Nrx, obj.Ntx);
             for i = 1:obj.n_path
                 
-                % 0 평균전력이 할당된 경로를 계산 제외
-                if obj.pdp(i) == 0
-                    continue; 
-                else
-                    if f_idx == 0, f_idx = i;   end
-                end
+                % 0 평균전력이 할당된 경로를 계산 제외 및 첫 경로 index 저장
+                if obj.pdp(i) == 0, continue; 
+                elseif f_idx == 0, f_idx = i;   end
                 
                 % 각 ray당 채널 계수 계산
                 tmp_coeff = zeros(sample_len, obj.Nrx, obj.Ntx);
@@ -411,6 +410,7 @@ classdef SCM < handle
             
             % PDP 벡터 생성
             ts = 1/obj.fs;
+            
             % index 시작 위치 및 다음 계수로의 전력 분산으로 인한 길이 연장 '2'
             len = ceil( max(delay) / ts ) + 2;
             obj.pdp = zeros(1, len);
