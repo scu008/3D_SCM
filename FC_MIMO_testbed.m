@@ -3,6 +3,7 @@
 % 기본 파라미터 설정
 model = SCM();
 model.n_path = path;
+model.n_mray = scatter;
 cp_len = fft_len / 4;
 data_len = fft_len * mod_type;
 
