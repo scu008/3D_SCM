@@ -81,7 +81,7 @@ classdef SCM < handle
             obj.Ntx = [];
             obj.Nrx = [];
             obj.n_path = 7;
-            obj.n_mray = 20;
+            obj.n_mray = 15;
             obj.n_ray = [];
             obj.asd = 3;
             obj.zsd = 3;

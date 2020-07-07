@@ -115,6 +115,3 @@ H = model.FD_channel(fft_len, 300);
 y = awgn_noise(  model.FD_fading(sym, H),  20);
 
 
-
-
-
