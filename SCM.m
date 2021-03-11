@@ -99,7 +99,7 @@ classdef SCM < handle
             obj.exp_beta = 3;
             obj.sdw_std = 0;
             obj.los = 0;
-            obj.los_flag = 1;
+            obj.los_flag = 0;
             obj.K = 15;
             obj.No = -174;
             obj.ZoD_L = pi/2;
