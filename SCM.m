@@ -99,7 +99,7 @@ classdef SCM < handle
             obj.exp_beta = 3;
             obj.sdw_std = 0;
             obj.los = 0;
-            obj.los_flag = 0;
+            obj.los_flag = 1;
             obj.K = 15;
             obj.No = -174;
             obj.ZoD_L = pi/2;
@@ -161,6 +161,7 @@ classdef SCM < handle
             obj.AoA_L = angle([1 1j 0] * R.' * dst_tmp.');
             
             % LOS가 가능한 환경인지 점검
+            obj.los_flag = 0;
             flag = zeros(1,4);
             if (obj.ZoD_L >= 0) && ( abs(obj.ZoD_L) <= pi ), flag(1) = 1; end
             if abs(obj.AoD_L) <= pi/2, flag(2) = 1; end
