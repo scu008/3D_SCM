@@ -234,7 +234,7 @@ classdef SCM < handle
         
         % Cluster 및 ray의 ZoD, AoD, ZoA, AoA를 계산하는 함수 ==============
         function [res_angle, angle] = gen_angle(obj)
-            % c_ang: 송수신 각도, c_ang = [ AoD(1:n_path); ZoD(1:n_path); AoA(1:n_path); ZoA(1:n_path); ]
+            % c_ang: 송수신 각도, c_ang = [ ZoD(1:n_path); AoD(1:n_path); ZoA(1:n_path); AoA(1:n_path); ]
             % res_ang: 전체 송수신 각도
     
             % 각 cluster의 ZoD, AoD, ZoA, AoA 중심 값 생성
@@ -308,7 +308,7 @@ classdef SCM < handle
         function [r_coeff, c_ang, res_ang] = FD_channel(obj, sample_len, i_vel)
             % sample_len: 시간 영역 채널 길이 (송신 신호의 샘플 길이와 동일)
             % i_vel: 각 샘플에 대한 속도 벡터(3차원) e.g. [160 0 0]: x 방향으로 160km/h
-            % c_ang: 송수신 각도 c_ang = [ AoD(1:n_path); ZoD(1:n_path); AoA(1:n_path); ZoA(1:n_path); ]
+            % c_ang: 송수신 각도 c_ang = [ ZoD(1:n_path); AoD(1:n_path); ZoA(1:n_path); AoA(1:n_path); ]
             % ang: c_ang에 대한 subcluster 각도
             
             % 변수 초기화(속도, 파장, 샘플 간격, 안테나 행렬, 첫 번째 경로의 인덱스)
