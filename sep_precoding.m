@@ -46,7 +46,7 @@ diff_W = 100;
 prev_W = W;
 
 % 아날로그 프리코딩 행렬의 수렴을 확인
-while diff_W > 0.1
+while diff_W > 4
     
     % 아날로그 프리코딩 행렬의 열 최적화
     for j = 1:N_rf
