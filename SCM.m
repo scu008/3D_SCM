@@ -36,7 +36,7 @@ classdef SCM < handle
         sdw_std         % Shadowing 기능의 표준편차, default: 0
         los             % LOS(Line of Sight) 환경을 반영할지 결정하는 변수 1: LOS, 0: non-LOS
         K               % LOS와 non-LOS 신호 전력 사이의 비율 [dB]
-        No              % AWGN의 PSD, default: -174 [dB/Hz] (-204 [dbm/Hz])
+        No              % AWGN의 PSD, default: -204 [dB/Hz] (-174 [dbm/Hz])
         ZoD_L           % LOS 방향의 ZoD
         AoD_L           % LOS 방향의 AoD
         ZoA_L           % LOS 방향의 ZoA
