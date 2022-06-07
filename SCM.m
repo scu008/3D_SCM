@@ -1,5 +1,5 @@
 % 3GPP TR 38.900 based three-dimensional Spatial Channel Model(SCM) model
-% Version 0.7 made in 2020-05-10
+% Version 1.0 made in 2022-06-07
 
 classdef SCM < handle
     
@@ -12,6 +12,8 @@ classdef SCM < handle
         Ts              % 채널의 sampling period
         tx_ant          % 송신단의 안테나 배열 정보 [ row  col  row_dis  col_dis ]
         rx_ant          % 수신단의 안테나 배열 정보 [ row  col  row_dis  col_dis ]
+        tx_array     % 주어진 송신단의 안테나 위치 행렬
+        rx_array	    % 주어진 수신단의 안테나 위치 행렬
         tx_d            % 송신단의 안테나 위치 행렬
         rx_d            % 수신단의 안테나 위치 행렬
         Ntx             % 송신단의 안테나 수
@@ -36,7 +38,7 @@ classdef SCM < handle
         sdw_std         % Shadowing 기능의 표준편차, default: 0
         los             % LOS(Line of Sight) 환경을 반영할지 결정하는 변수 1: LOS, 0: non-LOS
         K               % LOS와 non-LOS 신호 전력 사이의 비율 [dB]
-        No              % AWGN의 PSD, default: -204 [dB/Hz] (-174 [dbm/Hz])
+        No              % AWGN의 PSD, default: -174 [dB/Hz] (-204 [dbm/Hz])
         ZoD_L           % LOS 방향의 ZoD
         AoD_L           % LOS 방향의 AoD
         ZoA_L           % LOS 방향의 ZoA
@@ -48,10 +50,16 @@ classdef SCM < handle
         los_flag        % LOS 환경 check를 위한 내부 변수
         
         % 방사 패턴 함수 및 변수
+        tx_pattern      % 송신단의 전력 방사패턴
+        rx_pattern      % 수신단의 전력 방사패턴
         tx_theta        % 송신단의 수직 방사패턴
         tx_phi          % 송신단의 수평 방사패턴
         rx_theta        % 수신단의 수직 방사패턴
         rx_phi          % 수신단의 수평 방사패턴
+        tx_pole         % 송신단의 pole 구성변수
+        rx_pole         % 수신단의 pole 구성변수
+        tx_slant        % 송신단의 편파각도
+        rx_slant        % 수신단의 편파각도
         
         % 기타 함수 및 모델 변수
         cvt_S2R         % 원통좌표를 직교좌표로 변환하는 함수
@@ -78,6 +86,8 @@ classdef SCM < handle
             obj.Ts = [];
             obj.tx_ant = [1 1 0.5 0.5];
             obj.rx_ant = [1 1 0.5 0.5];
+            obj.tx_array = [0 0 0];
+            obj.rx_array = [0 0 0];
             obj.Ntx = [];
             obj.Nrx = [];
             obj.n_path = 7;
@@ -101,7 +111,7 @@ classdef SCM < handle
             obj.los = 0;
             obj.los_flag = 1;
             obj.K = 15;
-            obj.No = -204;
+            obj.No = -174;
             obj.ZoD_L = pi/2;
             obj.AoD_L = 0;
             obj.ZoA_L = pi/2;
@@ -110,10 +120,12 @@ classdef SCM < handle
             % 방사 패턴 초기값 설정
             % Radiation Power Pattern이 A(theta, phi) 일 때, mono-pole이면 sqrt(A(theta, phi))
             % Cross-pole인 경우 sqrt(A(theta, phi))*cos(angle)과 sqrt(A(theta, phi))*sin(angle)
-            obj.tx_theta = @(theta, phi) 1;
-            obj.tx_phi = @(theta, phi) 0;
-            obj.rx_theta = @(theta, phi) 1;
-            obj.rx_phi = @(theta, phi) 0;
+            obj.tx_pattern = @(theta, phi) ones(size(theta));
+            obj.rx_pattern = @(theta, phi) ones(size(theta));
+            obj.tx_pole = 1;
+            obj.rx_pole = 1;
+            obj.tx_slant = pi/4;
+            obj.rx_slant = pi/4;
             
             % 함수 초기화
             obj.cvt_S2R = @(theta, phi) [sin(theta).*cos(phi); sin(theta).*sin(phi); cos(theta)];
@@ -133,12 +145,12 @@ classdef SCM < handle
                 R = obj.R_mat(0, 0, 0);
                 src_tmp = p_dst - p_src;
                 src_tmp = src_tmp / norm(src_tmp);
-                obj.abr_src = [angle([1 1j 0] * R.' * src_tmp.') -( pi/2 - acos([0 0 1] * R.' * src_tmp.') ) 0];
+                obj.abr_src = [angle([1 1j 0] * R.' * src_tmp.') - ( pi/2 - acos([0 0 1] * R.' * src_tmp.') ) 0];
                 
                 % 수신기 안테나 지향 방향 초기화
                 dst_tmp = p_src - p_dst;
                 dst_tmp = dst_tmp / norm(dst_tmp);
-                obj.abr_dst = [angle([1 1j 0] * R.' * dst_tmp.') -( pi/2 - acos([0 0 1] * R.' * dst_tmp.') ) 0];
+                obj.abr_dst = [angle([1 1j 0] * R.' * dst_tmp.') - ( pi/2 - acos([0 0 1] * R.' * dst_tmp.') ) 0];
             else
                 obj.abr_src = abr_src;
                 obj.abr_dst = abr_dst;
@@ -177,24 +189,57 @@ classdef SCM < handle
         end
         
         
-        % 직사각 배열 안테나를 기반으로 안테나 위치 행렬을 초기화하는 함수 ====
+        % 각종 변수들을 메소드 동작 시 초기화하는 함수 ====
         function [] = init_d(obj)
-            
+
+            % 기본설정변수 초기화
+            obj.lamda = (3e8) / obj.fc;
+            obj.Ts = 1/obj.fs;
+
             % 송신단의 안테나 위치 행렬
-            obj.Ntx = obj.tx_ant(1) * obj.tx_ant(2);
-            tdy = obj.tx_ant(3) * obj.lamda;    
-            tdz = obj.tx_ant(4) * obj.lamda;
-            temp1 = repmat(0:obj.tx_ant(1)-1, obj.tx_ant(2), 1);
-            temp2 = repmat(0:obj.tx_ant(2)-1, 1, obj.tx_ant(1));
-            obj.tx_d = [ zeros(obj.Ntx,1) temp1(:)*tdy (temp2.')*tdz];
-            
+            if isempty(obj.tx_array)
+                tdy = obj.tx_ant(3) * obj.lamda;    
+                tdz = obj.tx_ant(4) * obj.lamda;
+                temp1 = repmat(0:obj.tx_ant(1)-1, obj.tx_ant(2), 1);
+                temp2 = repmat(0:obj.tx_ant(2)-1, 1, obj.tx_ant(1));
+                obj.tx_d = [ zeros(length(temp1(:)),1) temp1(:)*tdy (temp2.')*tdz];       
+
+            else
+                obj.tx_d = obj.tx_array;
+            end            
+
             % 수신단의 안테나 위치 행렬
-            obj.Nrx = obj.rx_ant(1) * obj.rx_ant(2);
-            rdy = obj.rx_ant(3) * obj.lamda;
-            rdz = obj.rx_ant(4) * obj.lamda;
-            temp3 = repmat(0:obj.rx_ant(1)-1, obj.rx_ant(2), 1);
-            temp4 = repmat(0:obj.rx_ant(2)-1, 1, obj.rx_ant(1));
-            obj.rx_d = [ zeros(obj.Nrx,1) temp3(:)*rdy (temp4.')*rdz];
+            if isempty(obj.rx_array)
+                rdy = obj.rx_ant(3) * obj.lamda;
+                rdz = obj.rx_ant(4) * obj.lamda;
+                temp3 = repmat(0:obj.rx_ant(1)-1, obj.rx_ant(2), 1);
+                temp4 = repmat(0:obj.rx_ant(2)-1, 1, obj.rx_ant(1));
+                obj.rx_d = [ zeros(length(temp3(:)),1) temp3(:)*rdy (temp4.')*rdz];
+
+            else
+                obj.rx_d = obj.rx_array;
+            end
+
+            % 송수신단의 안테나 수 계산
+            [obj.Ntx, ~] = size(obj.tx_d);
+            [obj.Nrx, ~] = size(obj.rx_d);
+            
+            % 방사패턴 설정
+            if obj.tx_pole == 2
+                obj.tx_theta = @(theta, phi) sqrt(obj.tx_pattern(theta, phi)) * cos(obj.tx_slant);
+                obj.tx_phi = @(theta, phi) sqrt(obj.tx_pattern(theta, phi)) * sin(obj.tx_slant);            
+            elseif obj.tx_pole ~= 2
+                obj.tx_theta = @(theta, phi) sqrt(obj.tx_pattern(theta, phi));
+                obj.tx_phi = @(theta, phi) 0;
+            end
+            
+            if obj.rx_pole == 2
+                obj.rx_theta = @(theta, phi) sqrt(obj.rx_pattern(theta, phi)) * cos(obj.rx_slant);
+                obj.rx_phi = @(theta, phi) sqrt(obj.rx_pattern(theta, phi)) * sin(obj.rx_slant);               
+            elseif obj.rx_pole ~= 2
+                obj.rx_theta = @(theta, phi) sqrt(obj.rx_pattern(theta, phi));
+                obj.rx_phi = @(theta, phi) 0;
+            end
         end
         
         
@@ -316,8 +361,6 @@ classdef SCM < handle
             % 변수 초기화(속도, 파장, 샘플 간격, 안테나 행렬, 첫 번째 경로의 인덱스)
             if nargin < 3, vel = 0; else, vel = i_vel * 5/18; end
             if length(vel) < 3, vel = [vel 0 0]; end
-            obj.lamda = (3e8) / obj.fc;
-            obj.Ts = 1/obj.fs;
             obj.init_d();
             f_idx = 0;
             
@@ -457,7 +500,58 @@ classdef SCM < handle
             rx_power = tx_power * loss;
             snr = 10*log10(rx_power / N_power);
         end
+
+        % Tx의 방사패턴에 따른 수신지역의 도달 전력을 계산하는 함수 ========
+        function [rx_p] = pattern_pos(obj, pos_src, pos_aim, pos_dst, Wt)
+            % rx_p: 수신지역에 도달한 전력 (Watt)
+            % pos_src: 송신기의 절대좌표
+            % pos_aim: 송신기 안테나가 지향하는 좌표 (roll-pitch-yaw 계산용)
+            % pos_dst: 수신기의 절대좌표
+            % Wt: 송신기에서 사용하는 빔포밍 벡터
+            
+            % 변수 초기화
+            if nargin < 5, Wt = 1;	end
+            obj.init_d();
+
+
+            % 지향 좌표에 대한 abr 계산
+            tmp_aim = pos_aim - pos_src;
+            [a, b, ~] = cart2sph(tmp_aim(1), tmp_aim(2), tmp_aim(3));
+            abr_src  = [a -b 0];
+
+            % 각 수신 지점에 따른 LOS 각도 계산
+            src_tmp = pos_dst - pos_src;
+            src_tmp = src_tmp ./ sqrt(sum(src_tmp.^2, 2));
+            R = obj.R_mat(abr_src(1), abr_src(2), abr_src(3));
+            ZoD_L = acos([0 0 1] * R.' * src_tmp.');
+            AoD_L = angle([1 1j 0] * R.' * src_tmp.');
+
+            % 송신기의 안테나당 채널 생성 및 빔포밍 벡터 적용
+            tx_r = obj.cvt_S2R(ZoD_L, AoD_L);
+            sub_tx = exp(2j*pi * obj.tx_d * tx_r / obj.lamda).' .* repmat(obj.tx_theta(ZoD_L, AoD_L).', 1, obj.Ntx) / sqrt(obj.Ntx);
+            rx_p = abs(sub_tx * Wt).^2;
+
+        end
+
+        % 방사패턴과 각도에 대한 전력 이득을 계산하는 함수 ========
+        function [rx_p] = pattern_ang(obj, rd_ang, Wt)
+            % rx_p: 방사 전력 (Watt)
+            % rad_ang: [theta; phi] = 고각 및 방위각 정보
+            % Wt: 송신기에서 사용하는 빔포밍 벡터
+            
+            % 변수 초기화
+            if nargin < 3, Wt = 1;	end
+            obj.init_d();
+            ZoD_L = rd_ang(1,:);
+            AoD_L = rd_ang(2,:);
+
+            % 송신기의 안테나당 채널 생성 및 빔포밍 벡터 적용
+            tx_r = obj.cvt_S2R(ZoD_L, AoD_L);
+            sub_tx = exp(2j*pi * obj.tx_d * tx_r / obj.lamda).' .* repmat(obj.tx_theta(ZoD_L, AoD_L).', 1, obj.Ntx) / sqrt(obj.Ntx);
+            rx_p = abs(sub_tx * Wt).^2;
+
+        end
         
-        
+
     end
 end
