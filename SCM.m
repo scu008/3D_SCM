@@ -295,7 +295,7 @@ classdef SCM < handle
             for i = 1 : obj.n_path
                 
                 % ray의 수가 1일 경우에는 중심 각도를 그대로 이용
-                if obj.n_ray == 1, tmp_angle = angle;
+                if obj.n_ray(i) == 1, tmp_angle = angle;
                 else
                     tmp_angle = randn(4, obj.n_ray(i));
                     tmp_angle(1,:) = tmp_angle(1,:) * (obj.zsd * pi/180) + angle(1,i);
