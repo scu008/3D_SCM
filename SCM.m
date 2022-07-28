@@ -111,7 +111,7 @@ classdef SCM < handle
             obj.los = 0;
             obj.los_flag = 1;
             obj.K = 15;
-            obj.No = -174;
+            obj.No = -204;
             obj.ZoD_L = pi/2;
             obj.AoD_L = 0;
             obj.ZoA_L = pi/2;
