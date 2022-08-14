@@ -9,14 +9,15 @@ mod_type = 4;
 freq = [11e9 11e9];
 model = SCM();
 model.n_path = 3;
-model.n_mray = 2;
+model.n_msubclt = 2;
+model.n_mray = 19;
 ray_ang = cell(1,3);
 
 % 각도 설정
 ray_ang{1} = rand(4,3)*(pi/2);
 ray_ang{2} = rand(4,2)*(pi/2);
 ray_ang{3} = rand(4,7)*(pi/2);
-% model.full_ang = ray_ang;
+model.full_ang = ray_ang;
 
 % 데이터 생성
 bit = randi([0 1], 1, bit_len);
